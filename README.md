@@ -1,54 +1,75 @@
-# 👑 StyleVault
+# 👑 StyleVault | Premium Fashion E-Commerce
 
-A production-grade fashion e-commerce mobile application built with Flutter and Firebase.  
-StyleVault delivers a secure, scalable, and high-performance shopping experience with a luxury fashion UI.
+<p align="center">
+  <img src="assets/images/sv_banner.png" width="100%" alt="StyleVault Banner" />
+</p>
 
----
-
-## 📌 Project Summary
-
-StyleVault is a production-focused Flutter e-commerce application designed for a premium fashion shopping experience.
-
-The system is built to support real-world usage with a scalable architecture, secure authentication, and structured data flow using Firebase services.
-
-Key focus areas:
-- Clean and modular architecture
-- Secure user authentication and session control
-- Fast product browsing and smooth UI performance
-- Reliable cart and checkout flow
-- Scalable backend integration using Firebase
-
-The project follows a feature-based structure to support future expansion, team development, and long-term maintenance.
+<p align="center">
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&style=for-the-badge" alt="Flutter"></a>
+  <a href="https://firebase.google.com"><img src="https://img.shields.io/badge/Firebase-Backend-FFCA28?logo=firebase&logoColor=black&style=for-the-badge" alt="Firebase"></a>
+  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-Language-0175C2?logo=dart&style=for-the-badge" alt="Dart"></a>
+  <img src="https://img.shields.io/badge/Architecture-MVVM%20%2B%20Provider-success?style=for-the-badge" alt="Architecture">
+</p>
 
 ---
 
-## 🚀✨ Overview
+## 📖 Project Overview
 
-StyleVault handles the full e-commerce journey:
+**StyleVault** is an elite, production-grade mobile commerce application engineered for the luxury fashion sector. Developed using **Flutter** and **Firebase**, it provides a seamless, high-performance shopping journey wrapped in a sophisticated "Luxury Noir" interface.
 
-- 👤 User authentication and session control  
-- 🛍️ Product browsing and discovery  
-- 👗 Product detail viewing  
-- 🛒 Cart management system  
-- 💳 Secure checkout process  
-- 📦 Order tracking and history  
+The system is built on an **MVVM (Model-View-ViewModel)** architecture, ensuring extreme modularity, easy testing, and the scalability required for modern retail environments.
 
 ---
 
-## 🛠️ Tech Stack
+##🛡️ Key Features & Engineering Excellence
 
-### 📱 Mobile Application
-- Flutter (UI and business logic)
-- Dart
+   - 🔐 Identity & Security: Industrial-grade Firebase Auth implementation featuring persistent login sessions and Role-Based Access Control (RBAC) to distinguish between Customers and         Admins.
+    
+   - 🗄️ Real-time Synchronization: Reactive data layer utilizing Cloud Firestore snapshots for live inventory tracking and instant order status updates.
+    
+   - 👑 Premium UI/UX: A bespoke "Luxury Noir" design system. The deep-black aesthetic is paired with gold-accented Call-to-Action (CTA) elements to drive high conversion rates.
+    
+   - 📊 Integrated Admin Suite: A high-utility internal dashboard enabling real-time inventory adjustments, stock management, and order fulfillment tracking.
+    
+   - 🛒 Optimized Checkout: A frictionless, multi-step commerce flow featuring real-time order summaries, address validation, and secure state handling.
+    
+   - 🖼️ Media Optimization: High-fidelity image rendering powered by Cloudinary CDN integration with automated disk and memory caching for zero-latency browsing. 
 
-### ☁️ Backend Services
-- Firebase Authentication 🔐
-- Cloud Firestore 🗄️
-- Firebase Storage 📸
+---
 
-### ⚙️ Architecture & Tools
-- Provider (state management)
-- go_router (navigation system)
+## 🏗️ Technical Architecture & Directory Mapping
+
+StyleVault follows a strict **Layered Feature Architecture** to decouple business logic from UI components:
+
+```text
+lib/
+├── core/                  # Global Configs & Design System
+│   ├── constants/         # App Colors (Onyx/Gold), Text Styles, & API Keys
+│   └── router/            # Declarative routing via GoRouter with Guards
+├── data/                  # Data Access Layer
+│   ├── models/            # Data entities & JSON serialization logic
+│   └── services/          # Firebase Auth, Firestore streams, & Seed logic
+├── providers/             # ViewModel Layer (State Management)
+│   └── providers.dart     # Reactive logic handling UI state
+├── ui/                    # Presentation Layer
+│   ├── screens/           # Feature views (Home, Cart, Profile, Admin)
+│   ├── widgets/           # Atomic, reusable UI components
+│   └── splash/            # Boot logic & session validation
+└── main.dart              # Application entry & Provider initialization
+
+```
+---
+
+## 🛠️ Technical Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | [Flutter](https://flutter.dev) (High-Performance Cross-Platform) |
+| **State Management** | [Provider](https://pub.dev/packages/provider) (Clean MVVM Architecture) |
+| **Navigation** | [GoRouter](https://pub.dev/packages/go_router) (Declarative Routing & Guards) |
+| **Backend** | [Firebase](https://firebase.google.com) (Auth, Firestore, Storage) |
+| **Database** | [Cloud Firestore](https://firebase.google.com/docs/firestore) (Real-time NoSQL) |
+| **Cloud Media** | [Cloudinary](https://cloudinary.com) (Enterprise Image CDN) |
 
 ---
 
@@ -72,21 +93,14 @@ StyleVault handles the full e-commerce journey:
 
 ---
 
-## 🧩✨ Core Features
-
-- 👤 Email and password authentication  
-- 🛍️ Product catalog from Firestore  
-- 🏷️ Category filtering system  
-- 👗 Product detail pages  
-- 🛒 Shopping cart management  
-- 💳 Checkout flow  
-- 📦 Order history tracking  
-- 🧱 Reusable UI components  
-
----
 
 ## ⚙️🚀 Getting Started
-
+---
+    Prerequisites
+    
+          Flutter SDK ^3.x.x
+          Firebase CLI & Account
+---
 ### 📥 Clone repository
 
 ```bash
