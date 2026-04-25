@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "910761596990",
+    "project_id": "stylevault-11a65",
+    "storage_bucket": "stylevault-11a65.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:910761596990:android:f51786c24f598ed503596f",
+        "android_client_info": {
+          "package_name": "com.example.stylevault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe0_SFHNGJtWcbtHBgJNmgTauwKuszdjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
