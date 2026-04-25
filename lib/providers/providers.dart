@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/models/models.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/services.dart';
@@ -7,14 +8,20 @@ import '../data/services/services.dart';
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
   UserModel? _user;
-  bool _isLoading = true; // true until Firebase auth state is known
+  bool _isLoading = true;
   String? _error;
+  bool _isLockedOut = false;
+  int _lockoutSecondsRemaining = 0;
+  int _attemptsRemaining = 5;
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isLoggedIn => _user != null;
   bool get isAdmin => _user?.isAdmin ?? false;
+  bool get isLockedOut => _isLockedOut;
+  int get lockoutSeconds => _lockoutSecondsRemaining;
+  int get attemptsRemaining => _attemptsRemaining;
 
   AuthProvider() {
     _authService.authStateChanges.listen((firebaseUser) async {
@@ -28,7 +35,6 @@ class AuthProvider extends ChangeNotifier {
     });
   }
 
-  /// Refresh user data from Firestore (useful after role change)
   Future<void> refreshUser() async {
     final firebaseUser = _authService.currentUser;
     if (firebaseUser != null) {
@@ -38,16 +44,33 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) async {
-    _isLoading = true;
     _error = null;
+    _isLockedOut = false;
+
+    if (_authService.isLockedOut(email)) {
+      _isLockedOut = true;
+      _lockoutSecondsRemaining = _authService.lockoutSecondsRemaining(email);
+      final mins = (_lockoutSecondsRemaining / 60).ceil();
+      _error =
+          'Too many failed attempts. Try again in $mins minute${mins == 1 ? '' : 's'}.';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
     notifyListeners();
+
     try {
       _user = await _authService.login(email: email, password: password);
+      _attemptsRemaining = 5;
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _error = _parseError(e.toString());
+      _isLockedOut = _authService.isLockedOut(email);
+      _lockoutSecondsRemaining = _authService.lockoutSecondsRemaining(email);
+      _attemptsRemaining = _authService.attemptsRemaining(email);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -75,6 +98,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     await _authService.logout();
     _user = null;
+    _error = null;
     notifyListeners();
   }
 
@@ -84,13 +108,65 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> sendPasswordReset(String email) async {
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email.trim().toLowerCase())
+          .limit(1)
+          .get();
+      if (query.docs.isEmpty) {
+        _error = 'No account found with that email address.';
+        notifyListeners();
+        return false;
+      }
+      await _authService.sendPasswordResetEmail(email);
+      return true;
+    } catch (e) {
+      _error = _parseError(e.toString());
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // ── Change password (reauthenticate first, then update) ────
+  Future<void> reauthenticate(String email, String password) async {
+    await _authService.reauthenticate(email, password);
+  }
+
+  Future<void> changePassword(String newPassword) async {
+    await _authService.changePassword(newPassword);
+  }
+
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
   String _parseError(String raw) {
-    if (raw.contains('user-not-found')) return 'No account found with this email.';
+    if (raw.contains('user-not-found') || raw.contains('invalid-credential')) {
+      return 'Invalid email or password.';
+    }
     if (raw.contains('wrong-password')) return 'Incorrect password.';
-    if (raw.contains('email-already-in-use')) return 'Email is already registered.';
-    if (raw.contains('weak-password')) return 'Password should be at least 6 characters.';
+    if (raw.contains('email-already-in-use')) {
+      return 'An account already exists with this email.';
+    }
+    if (raw.contains('weak-password')) {
+      return 'Password must be at least 6 characters.';
+    }
     if (raw.contains('invalid-email')) return 'Please enter a valid email.';
-    return 'An error occurred. Please try again.';
+    if (raw.contains('network-request-failed')) {
+      return 'No internet connection. Please check your network.';
+    }
+    if (raw.contains('too-many-requests')) {
+      final match = RegExp(r'message: (.+)\)').firstMatch(raw);
+      return match?.group(1) ??
+          'Too many attempts. Account temporarily locked.';
+    }
+    if (raw.contains('user-disabled')) {
+      return 'This account has been disabled. Contact support.';
+    }
+    return 'Something went wrong. Please try again.';
   }
 }
 
@@ -102,7 +178,6 @@ class ProductProvider extends ChangeNotifier {
   List<ProductModel> _featured = [];
   String _selectedCategory = 'All';
   String _searchQuery = '';
-  final bool _isLoading = false;
 
   List<ProductModel> get products {
     List<ProductModel> list = _products;
@@ -117,7 +192,6 @@ class ProductProvider extends ChangeNotifier {
 
   List<ProductModel> get featured => _featured;
   String get selectedCategory => _selectedCategory;
-  bool get isLoading => _isLoading;
 
   void init() {
     _service.getProducts().listen((data) {
@@ -154,8 +228,8 @@ class CartProvider extends ChangeNotifier {
   String? _userId;
 
   List<CartItemModel> get items => _items;
-  int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
-  double get total => _items.fold(0, (sum, item) => sum + item.totalPrice);
+  int get itemCount => _items.fold(0, (acc, item) => acc + item.quantity);
+  double get total => _items.fold(0.0, (acc, item) => acc + item.totalPrice);
 
   void init(String userId) {
     _userId = userId;

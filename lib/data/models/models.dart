@@ -1,4 +1,6 @@
 // ─── USER MODEL ───────────────────────────────────────────────
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserModel {
   final String uid;
   final String name;
@@ -6,7 +8,7 @@ class UserModel {
   final String phone;
   final String address;
   final String photoUrl;
-  final String role; // 'user' or 'admin'
+  final String role; // 'user' | 'staff' | 'admin'
 
   UserModel({
     required this.uid,
@@ -18,7 +20,8 @@ class UserModel {
     this.role = 'user',
   });
 
-  bool get isAdmin => role == 'admin';
+  bool get isAdmin => role == 'admin' || role == 'staff';
+  bool get isSuperAdmin => role == 'admin';
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
     return UserModel(
@@ -33,13 +36,13 @@ class UserModel {
   }
 
   Map<String, dynamic> toMap() => {
-    'name': name,
-    'email': email,
-    'phone': phone,
-    'address': address,
-    'photoUrl': photoUrl,
-    'role': role,
-  };
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'address': address,
+        'photoUrl': photoUrl,
+        'role': role,
+      };
 
   UserModel copyWith({
     String? name,
@@ -106,17 +109,17 @@ class ProductModel {
   }
 
   Map<String, dynamic> toMap() => {
-    'name': name,
-    'description': description,
-    'price': price,
-    'category': category,
-    'imageUrl': imageUrl,
-    'stock': stock,
-    'sizes': sizes,
-    'colors': colors,
-    'isFeatured': isFeatured,
-    'rating': rating,
-  };
+        'name': name,
+        'description': description,
+        'price': price,
+        'category': category,
+        'imageUrl': imageUrl,
+        'stock': stock,
+        'sizes': sizes,
+        'colors': colors,
+        'isFeatured': isFeatured,
+        'rating': rating,
+      };
 }
 
 
@@ -158,14 +161,14 @@ class CartItemModel {
   }
 
   Map<String, dynamic> toMap() => {
-    'productId': productId,
-    'name': name,
-    'price': price,
-    'imageUrl': imageUrl,
-    'quantity': quantity,
-    'size': size,
-    'color': color,
-  };
+        'productId': productId,
+        'name': name,
+        'price': price,
+        'imageUrl': imageUrl,
+        'quantity': quantity,
+        'size': size,
+        'color': color,
+      };
 }
 
 
@@ -173,6 +176,8 @@ class CartItemModel {
 class OrderModel {
   final String id;
   final String userId;
+  final String userName;
+  final String userEmail;
   final List<CartItemModel> items;
   final double total;
   final String status;
@@ -183,6 +188,8 @@ class OrderModel {
   OrderModel({
     required this.id,
     required this.userId,
+    this.userName = '',
+    this.userEmail = '',
     required this.items,
     required this.total,
     required this.status,
@@ -200,23 +207,26 @@ class OrderModel {
     return OrderModel(
       id: id,
       userId: map['userId'] ?? '',
+      userName: map['userName'] ?? '',
+      userEmail: map['userEmail'] ?? '',
       items: itemsList,
       total: (map['total'] ?? 0).toDouble(),
       status: map['status'] ?? 'Pending',
       address: map['address'] ?? '',
       phone: map['phone'] ?? '',
-      createdAt:
-          (map['createdAt'] as dynamic)?.toDate() ?? DateTime.now(),
+      createdAt: (map['createdAt'] as dynamic)?.toDate() ?? DateTime.now(),
     );
   }
 
   Map<String, dynamic> toMap() => {
-    'userId': userId,
-    'items': items.map((e) => e.toMap()).toList(),
-    'total': total,
-    'status': status,
-    'address': address,
-    'phone': phone,
-    'createdAt': createdAt,
-  };
+      'userId': userId,
+      'userName': userName,
+      'userEmail': userEmail,
+      'items': items.map((e) => e.toMap()).toList(),
+      'total': total,
+      'status': status,
+      'address': address,
+      'phone': phone,
+      'createdAt': FieldValue.serverTimestamp(), // ← FIXED: proper Firestore timestamp
+    };
 }

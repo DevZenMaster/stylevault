@@ -128,15 +128,15 @@ class OrderService {
 
   /// Stream user's orders
   Stream<List<OrderModel>> getUserOrders(String userId) {
-    return _db
-        .collection('orders')
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => OrderModel.fromMap(d.data(), d.id))
-            .toList());
-  }
+  return _db
+      .collection('orders')
+      .where('userId', isEqualTo: userId)
+      .snapshots()                          // ← removed orderBy to avoid index error
+      .map((snap) => snap.docs
+          .map((d) => OrderModel.fromMap(d.data(), d.id))
+          .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt))); // ← sort in Dart
+}
 
   /// Get single order
   Future<OrderModel?> getOrder(String orderId) async {
