@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
@@ -18,6 +19,8 @@ class OrderHistoryScreen extends StatelessWidget {
         return AppColors.textPrimary;
       case 'Delivered':
         return AppColors.success;
+      case 'Cancelled':
+        return AppColors.error;
       default:
         return AppColors.textMuted;
     }
@@ -30,6 +33,17 @@ class OrderHistoryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new,
+              size: 18, color: AppColors.textPrimary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         title: Text(
           'MY ORDERS',
           style: AppTextStyles.headingSmall.copyWith(letterSpacing: 3),
@@ -40,14 +54,14 @@ class OrderHistoryScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                    Icon(
+                  Icon(
                     Icons.receipt_long_outlined,
                     color: AppColors.textMuted,
                     size: 64,
                   ),
-                   SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text('No orders yet', style: AppTextStyles.bodyMedium),
-                   SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     'Your order history will appear here',
                     style: AppTextStyles.bodySmall,
@@ -57,7 +71,7 @@ class OrderHistoryScreen extends StatelessWidget {
             )
           : ListView.separated(
               padding: const EdgeInsets.all(16),
-              separatorBuilder: (_, __) => const SizedBox(height: 1),
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemCount: orders.orders.length,
               itemBuilder: (_, i) {
                 final order = orders.orders[i];
@@ -111,7 +125,8 @@ class OrderHistoryScreen extends StatelessWidget {
                           child: Row(
                             children: [
                               const Text('• ',
-                                  style: TextStyle(color: AppColors.textMuted)),
+                                  style:
+                                      TextStyle(color: AppColors.textMuted)),
                               Expanded(
                                 child: Text(
                                   '${item.name}  ×${item.quantity}',

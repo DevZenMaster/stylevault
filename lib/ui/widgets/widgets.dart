@@ -42,8 +42,10 @@ class CustomButton extends StatelessWidget {
           ),
           child: isLoading
               ? const SizedBox(
-                  height: 18, width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold))
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppColors.gold))
               : Text(label.toUpperCase()),
         ),
       );
@@ -60,8 +62,10 @@ class CustomButton extends StatelessWidget {
         ),
         child: isLoading
             ? const SizedBox(
-                height: 18, width: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.background))
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: AppColors.background))
             : Text(label.toUpperCase()),
       ),
     );
@@ -75,6 +79,7 @@ class CustomTextField extends StatefulWidget {
   final String? hint;
   final TextEditingController controller;
   final bool obscure;
+  final bool enabled; // ← added
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final int maxLines;
@@ -85,6 +90,7 @@ class CustomTextField extends StatefulWidget {
     required this.controller,
     this.hint,
     this.obscure = false,
+    this.enabled = true, // ← added
     this.keyboardType,
     this.validator,
     this.maxLines = 1,
@@ -104,6 +110,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       obscureText: widget.obscure && !_visible,
       keyboardType: widget.keyboardType,
       maxLines: widget.maxLines,
+      enabled: widget.enabled, // ← added
       validator: widget.validator,
       style: AppTextStyles.bodyLarge,
       decoration: InputDecoration(
@@ -116,7 +123,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   color: AppColors.textMuted,
                   size: 18,
                 ),
-                onPressed: () => setState(() => _visible = !_visible),
+                onPressed: widget.enabled // ← disable toggle when field is disabled
+                    ? () => setState(() => _visible = !_visible)
+                    : null,
               )
             : null,
       ),
@@ -166,7 +175,8 @@ class ProductCard extends StatelessWidget {
                   ),
                   if (product.isFeatured)
                     Positioned(
-                      top: 8, left: 8,
+                      top: 8,
+                      left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
@@ -186,7 +196,8 @@ class ProductCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(product.name,
-                      style: AppTextStyles.headingSmall.copyWith(fontSize: 12),
+                      style:
+                          AppTextStyles.headingSmall.copyWith(fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
@@ -229,13 +240,17 @@ class CartItemTile extends StatelessWidget {
             borderRadius: BorderRadius.zero,
             child: CachedNetworkImage(
               imageUrl: item.imageUrl,
-              width: 80, height: 80,
+              width: 80,
+              height: 80,
               fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: AppColors.surfaceElevated),
+              placeholder: (_, __) =>
+                  Container(color: AppColors.surfaceElevated),
               errorWidget: (_, __, ___) => Container(
                   color: AppColors.surfaceElevated,
-                  width: 80, height: 80,
-                  child: const Icon(Icons.image, color: AppColors.textMuted)),
+                  width: 80,
+                  height: 80,
+                  child:
+                      const Icon(Icons.image, color: AppColors.textMuted)),
             ),
           ),
           const SizedBox(width: 12),
@@ -244,9 +259,12 @@ class CartItemTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.name, style: AppTextStyles.headingSmall.copyWith(fontSize: 13)),
+                Text(item.name,
+                    style:
+                        AppTextStyles.headingSmall.copyWith(fontSize: 13)),
                 if (item.size.isNotEmpty)
-                  Text('Size: ${item.size}', style: AppTextStyles.bodySmall),
+                  Text('Size: ${item.size}',
+                      style: AppTextStyles.bodySmall),
                 const SizedBox(height: 8),
                 Text('LKR ${item.totalPrice.toStringAsFixed(0)}',
                     style: AppTextStyles.priceSmall),
@@ -259,14 +277,19 @@ class CartItemTile extends StatelessWidget {
               Row(
                 children: [
                   _qtyButton(Icons.remove, () {
-                    if (item.quantity > 1) {onQuantityChanged(item.quantity - 1);}
-                    else {onRemove();}
+                    if (item.quantity > 1) {
+                      onQuantityChanged(item.quantity - 1);
+                    } else {
+                      onRemove();
+                    }
                   }),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('${item.quantity}', style: AppTextStyles.bodyLarge),
+                    child: Text('${item.quantity}',
+                        style: AppTextStyles.bodyLarge),
                   ),
-                  _qtyButton(Icons.add, () => onQuantityChanged(item.quantity + 1)),
+                  _qtyButton(
+                      Icons.add, () => onQuantityChanged(item.quantity + 1)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -287,7 +310,8 @@ class CartItemTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 28, height: 28,
+        width: 28,
+        height: 28,
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
         ),

@@ -22,26 +22,22 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1500));
+        vsync: this, duration: const Duration(milliseconds: 1200));
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
     _ctrl.forward();
   }
 
-  void _tryNavigate(AuthProvider auth) async {
+  /// Called once auth state is known (isLoading becomes false)
+  Future<void> _tryNavigate(AuthProvider auth) async {
     if (_navigated || !mounted) return;
-
-    // Wait minimum 2 seconds for branding
+    // Minimum 2-second brand display
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-
     _navigated = true;
 
     if (auth.isLoggedIn) {
-      if (auth.isAdmin) {
-        context.go('/admin');
-      } else {
-        context.go('/home');
-      }
+      // Route based on role — admin/staff → /admin, user → /home
+      context.go(auth.isAdmin ? '/admin' : '/home');
     } else {
       context.go('/login');
     }
@@ -55,10 +51,12 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch auth — when it resolves, navigate
     final auth = context.watch<AuthProvider>();
+
+    // Trigger navigation once Firebase auth state settles
     if (!auth.isLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _tryNavigate(auth));
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _tryNavigate(auth));
     }
 
     return Scaffold(
@@ -69,6 +67,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Logo mark
               Container(
                 width: 80,
                 height: 80,
@@ -76,22 +75,28 @@ class _SplashScreenState extends State<SplashScreen>
                   border: Border.all(color: AppColors.gold, width: 1.5),
                 ),
                 child: const Center(
-                  child: Text('SV',
-                      style: TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w300,
-                          letterSpacing: 4)),
+                  child: Text(
+                    'SV',
+                    style: TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 4),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
               const Text('STYLE', style: AppTextStyles.displayMedium),
-              Text('VAULT',
-                  style: AppTextStyles.displayMedium
-                      .copyWith(color: AppColors.gold, letterSpacing: 12)),
+              Text(
+                'VAULT',
+                style: AppTextStyles.displayMedium
+                    .copyWith(color: AppColors.gold, letterSpacing: 12),
+              ),
               const SizedBox(height: 8),
-              Text('FASHION REDEFINED',
-                  style: AppTextStyles.labelGold.copyWith(letterSpacing: 4)),
+              Text(
+                'FASHION REDEFINED',
+                style: AppTextStyles.labelGold.copyWith(letterSpacing: 4),
+              ),
               const SizedBox(height: 80),
               const SizedBox(
                 width: 24,

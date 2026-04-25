@@ -21,6 +21,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _cityCtrl = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-fill from user profile if available
+    final user = context.read<AuthProvider>().user;
+    if (user != null) {
+      _nameCtrl.text = user.name;
+      _phoneCtrl.text = user.phone;
+      _addressCtrl.text = user.address;
+    }
+  }
+
+  @override
   void dispose() {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
@@ -39,11 +51,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final order = OrderModel(
       id: '',
       userId: auth.user!.uid,
+      userName: auth.user!.name,
+      userEmail: auth.user!.email,
       items: List.from(cart.items),
       total: cart.total,
       status: 'Pending',
-      address: '${_addressCtrl.text}, ${_cityCtrl.text}',
-      phone: _phoneCtrl.text,
+      address: '${_addressCtrl.text.trim()}, ${_cityCtrl.text.trim()}',
+      phone: _phoneCtrl.text.trim(),
       createdAt: DateTime.now(),
     );
 
@@ -56,18 +70,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           barrierDismissible: false,
           builder: (_) => AlertDialog(
             backgroundColor: AppColors.surface,
-            title: const Text('Order Placed!', style: AppTextStyles.headingMedium),
+            shape: const RoundedRectangleBorder(),
+            title: const Text('Order Placed!',
+                style: AppTextStyles.headingMedium),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle, color: AppColors.gold, size: 48),
-                const SizedBox(height: 12),
+                const Icon(Icons.check_circle,
+                    color: AppColors.gold, size: 56),
+                const SizedBox(height: 16),
                 const Text(
                   'Your order has been placed successfully.',
                   style: AppTextStyles.bodyMedium,
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                Text('Order ID: $id', style: AppTextStyles.bodySmall),
+                Text(
+                  'Order ID: ${id.substring(0, 8).toUpperCase()}',
+                  style: AppTextStyles.bodySmall,
+                ),
               ],
             ),
             actions: [
@@ -76,7 +97,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   Navigator.pop(context);
                   context.go('/orders');
                 },
-                child: const Text('VIEW ORDERS', style: AppTextStyles.labelGold),
+                child: const Text('VIEW ORDERS',
+                    style: AppTextStyles.labelGold),
               ),
             ],
           ),
@@ -113,14 +135,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('DELIVERY DETAILS', style: AppTextStyles.headingSmall),
+              const Text('DELIVERY DETAILS',
+                  style: AppTextStyles.headingSmall),
               const SizedBox(height: 20),
 
               CustomTextField(
                 label: 'Full Name',
                 controller: _nameCtrl,
                 validator: (v) =>
-                    v == null || v.isEmpty ? 'Required' : null,
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               CustomTextField(
@@ -128,7 +151,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
                 validator: (v) =>
-                    v == null || v.isEmpty ? 'Required' : null,
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               CustomTextField(
@@ -136,19 +159,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 controller: _addressCtrl,
                 maxLines: 2,
                 validator: (v) =>
-                    v == null || v.isEmpty ? 'Required' : null,
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               CustomTextField(
                 label: 'City',
                 controller: _cityCtrl,
                 validator: (v) =>
-                    v == null || v.isEmpty ? 'Required' : null,
+                    v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 32),
 
               // Order summary
-              const Text('ORDER SUMMARY', style: AppTextStyles.headingSmall),
+              const Text('ORDER SUMMARY',
+                  style: AppTextStyles.headingSmall),
               const SizedBox(height: 12),
               Container(
                 color: AppColors.surface,
@@ -159,7 +183,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       (item) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Text(
@@ -183,7 +208,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('TOTAL', style: AppTextStyles.headingSmall),
+                        const Text('TOTAL',
+                            style: AppTextStyles.headingSmall),
                         Text(
                           'LKR ${cart.total.toStringAsFixed(0)}',
                           style: AppTextStyles.price,
@@ -197,7 +223,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
               CustomButton(
                 label: 'Place Order',
-                onPressed: _placeOrder,
+                onPressed: cart.items.isEmpty ? null : _placeOrder,
                 isLoading: orders.isLoading,
               ),
               const SizedBox(height: 32),
